@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: linear-gradient(45deg, #1a1a2e, #16213e, #1a1a2e);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: Arial, sans-serif;
+        }
+
+        .bubble {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.1));
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(5px);
+            transition: transform 0.3s ease-out;
+        }
+
+        .title {
+            color: white;
+            font-size: 2em;
+            text-align: center;
+            position: fixed;
+            top: 20px;
+            width: 100%;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            pointer-events: none;
+        }
+
+        .subtitle {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1.2em;
+            text-align: center;
+            position: fixed;
+            top: 70px;
+            width: 100%;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="title">Bubble Avoidance</div>
+    <div class="subtitle">Move your mouse around...</div>
+
+    <script>
+        const numBubbles = 90;
+        const bubbles = [];
+        const maxDistance = 90;
+        let mouseX = 0;
+        let mouseY = 0;
+
+        // Create bubbles
+        for (let i = 0; i < numBubbles; i++) {
+            const bubble = document.createElement('div');
+            bubble.className = 'bubble';
+            const size = Math.random() * 60 + 40;
+            bubble.style.width = `${size}px`;
+            bubble.style.height = `${size}px`;
+            
+            const position = {
+                x: Math.random() * window.innerWidth,
+                y: Math.random() * window.innerHeight
+            };
+            
+            bubble.style.left = `${position.x}px`;
+            bubble.style.top = `${position.y}px`;
+            
+            document.body.appendChild(bubble);
+            bubbles.push({ element: bubble, position, size });
+        }
+
+        // Track mouse movement
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            
+            bubbles.forEach(bubble => {
+                const dx = mouseX - bubble.position.x;
+                const dy = mouseY - bubble.position.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance < maxDistance) {
+                    const angle = Math.atan2(dy, dx);
+                    const force = (maxDistance - distance) / maxDistance;
+                    
+                    const moveX = -Math.cos(angle) * force * 100;
+                    const moveY = -Math.sin(angle) * force * 100;
+                    
+                    bubble.element.style.transform = `translate(${moveX}px, ${moveY}px)`;
+                } else {
+                    bubble.element.style.transform = 'translate(0, 0)';
+                }
+            });
+        });
+
+        // Gentle floating animation
+        function animate() {
+            bubbles.forEach(bubble => {
+                bubble.position.y += Math.sin(Date.now() / 1000 + bubble.position.x) * 0.5;
+                bubble.position.x += Math.cos(Date.now() / 1000 + bubble.position.y) * 0.5;
+                
+                // Wrap around screen
+                if (bubble.position.x > window.innerWidth + bubble.size) bubble.position.x = -bubble.size;
+                if (bubble.position.x < -bubble.size) bubble.position.x = window.innerWidth + bubble.size;
+                if (bubble.position.y > window.innerHeight + bubble.size) bubble.position.y = -bubble.size;
+                if (bubble.position.y < -bubble.size) bubble.position.y = window.innerHeight + bubble.size;
+                
+                bubble.element.style.left = `${bubble.position.x}px`;
+                bubble.element.style.top = `${bubble.position.y}px`;
+            });
+            
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
+</body>
+</html>
